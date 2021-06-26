@@ -21,11 +21,13 @@ namespace JucemgScrapping
         [Obsolete]
         private void Button1_Click(object sender, EventArgs e)
         {
-            new Thread(delegate ()
-            {
+
+            Thread threadFetch = new Thread(() => {
                 DisableButton();
                 _ = FetchData();
-            }).Start();
+            });
+
+            threadFetch.Start();
         }
 
         private async Task FetchData()
@@ -51,10 +53,16 @@ namespace JucemgScrapping
 
                 //var elements = await page.XPathAsync("//a[contains(text(), 'próxima')]");
 
-                if (await HasNext(page))
+                do
                 {
                     UpdateProggressLabel(companies, quantity);
-                    dynamic text = await GetCompaniesText(page);
+                    await GetCompaniesList(page, companies);
+
+                } while (await HasNext(page));
+
+                if (await HasNext(page))
+                {
+
 
 
                     //var nextButton = elements[0];
@@ -142,7 +150,7 @@ namespace JucemgScrapping
             return (short)someObject.Value;
         }
 
-        private async Task<dynamic> GetCompaniesText(Page page)
+        private async Task GetCompaniesList(Page page, List<string> rows)
         {
             string js = @" () => {
               const rows = [...document.querySelectorAll('#table-result-search-acts2 tbody tr')];
@@ -150,27 +158,18 @@ namespace JucemgScrapping
                 [...row.children].map((tableData) => tableData.textContent)
               );
             }";
-            //var someObject = await page.EvaluateFunctionAsync<dynamic>(js);
-            var someObject = await page.EvaluateFunctionAsync<dynamic>(js);
 
-            //var nextButton = elements[0];
-            //await nextButton.ClickAsync();
-            //var jsHandle = await element.GetPropertyAsync("value");
-            //var text = await jsHandle.JsonValueAsync<string>();
+            var companiesRows = await page.EvaluateFunctionAsync<dynamic>(js);
 
-            List<string> rows = new List<string>();
-            foreach (var item in someObject)
+            foreach (var company in companiesRows)
             {
-
                 string line = "";
-                foreach (var data in item)
+                foreach (var column in company)
                 {
-                    line = line + $"{data.Value},";
+                    line += column.Value +",";
                 }
                 rows.Add(line);
             }
-
-            ExportToCsv(rows);            
         }
 
         private static void ExportToCsv(List<string> rows)
