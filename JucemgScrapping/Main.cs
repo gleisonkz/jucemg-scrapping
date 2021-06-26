@@ -38,9 +38,9 @@ namespace JucemgScrapping
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
                 await page.EvaluateFunctionAsync<dynamic>("(value)=> document.querySelector('input[type=date]').value = value", date);
 
-                var companies = new List<string>();                
+                var companies = new List<string>();
 
-                
+
                 await page.TypeAsync("#tp_processo_id", "EXTINÇÃO");
 
                 await page.WaitForSelectorAsync("#pesquisa_ato");
@@ -170,12 +170,18 @@ namespace JucemgScrapping
                 rows.Add(line);
             }
 
-            File.WriteAllLines(@"D:\Gleison\Downloads\myfile.csv", rows, Encoding.UTF8);
+            ExportToCsv(rows);            
+        }
+
+        private static void ExportToCsv(List<string> rows)
+        {
+            var exportFilePath = Path.Combine(
+                       Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                       DateTime.Now.Date.ToString("yyyy_MM_dd"),
+                       ".csv");
+
+            File.WriteAllLines(exportFilePath, rows, Encoding.UTF8);
             MessageBox.Show($"Arquivo exportado");
-
-
-            var i = 0;
-            return someObject.Value();
         }
 
         private async Task ClickAsync(Page page, string selector)
