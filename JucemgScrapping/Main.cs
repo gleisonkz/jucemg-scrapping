@@ -18,11 +18,14 @@ namespace JucemgScrapping
             InitializeComponent();
         }
 
+        private static NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
+
         [Obsolete]
         private void Button1_Click(object sender, EventArgs e)
         {
 
-            Thread threadFetch = new Thread(() => {
+            Thread threadFetch = new Thread(() =>
+            {
                 DisableButton();
                 _ = FetchData();
             });
@@ -32,13 +35,16 @@ namespace JucemgScrapping
 
         private async Task FetchData()
         {
-            Browser browser = await LaunchBrowserAsync();
+            Browser browser = await LaunchBrowserAsync(false);
             try
             {
-                string date = currentDate.Value.AddDays(-1).ToString("yyyy-MM-dd");
+                string date = currentDate.Value.AddDays(-1).ToString();
+
                 var page = await browser.NewPageAsync();
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
-                await page.EvaluateFunctionAsync<dynamic>("(value)=> document.querySelector('input[type=date]').value = value", date);
+
+                // await page.EvaluateFunctionAsync<dynamic>("(value)=> document.querySelector('input[type=date]').value = value", date);
+                await page.TypeAsync("input[type=date]", date);
 
                 var companies = new List<string>();
 
@@ -57,6 +63,7 @@ namespace JucemgScrapping
                 {
                     UpdateProggressLabel(companies, quantity);
                     await GetCompaniesList(page, companies);
+                    ClickHyperlinkWithText(page, "próxima");
 
                 } while (await HasNext(page));
 
@@ -78,6 +85,7 @@ namespace JucemgScrapping
             {
                 await browser.CloseAsync();
                 MessageBox.Show($"Algo deu errado! {ex.Message}");
+                Reset();
             }
         }
 
@@ -127,6 +135,21 @@ namespace JucemgScrapping
             button1.Enabled = false;
         }
 
+        private void Reset()
+        {
+            var ResetAction  = new Action(() => Reset());
+
+            if (progressBar.InvokeRequired)
+            {
+                progressBar.Invoke(ResetAction);
+                return;
+            }
+            
+            progressBar.Maximum = 0;
+            progressBar.Value = 0;
+            button1.Enabled = true;
+        }
+
 
         private async Task<bool> HasNext(Page page)
         {
@@ -166,7 +189,7 @@ namespace JucemgScrapping
                 string line = "";
                 foreach (var column in company)
                 {
-                    line += column.Value +",";
+                    line += column.Value + ",";
                 }
                 rows.Add(line);
             }
@@ -189,6 +212,17 @@ namespace JucemgScrapping
             await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").click()").ConfigureAwait(false);
         }
 
+        private async Task ClickHyperlinkWithText(Page page, string hyperlinkText)
+        {
+            var aElementsWithRestful = await page.XPathAsync($"//a[contains(text(), '{hyperlinkText}')]");
+            if (aElementsWithRestful.Length < 1)
+                throw new Exception($"A hyperlink with text: {hyperlinkText} was not found");
+
+            var navigationTask = page.WaitForNavigationAsync(_navigationOptions);
+            var clickTask = aElementsWithRestful[0].ClickAsync();
+            await Task.WhenAll(navigationTask, clickTask);
+        }
+
         private async Task ClickElementWithXPathAndWaitForXPath(
             Page page,
             string clickOnXpathExpression,
@@ -196,7 +230,7 @@ namespace JucemgScrapping
         {
             var aElementsWithRestful = await page.XPathAsync(clickOnXpathExpression);
             if (aElementsWithRestful.Length < 1)
-                throw new Exception($"A hyperlink with expression: {clickOnXpathExpression} was not found");
+                throw new Exception($"A element with expression: {clickOnXpathExpression} was not found");
 
             var navigationTask = page.WaitForXPathAsync(waitForXpathExpression);
             var clickTask = aElementsWithRestful[0].ClickAsync();
