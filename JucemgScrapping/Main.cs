@@ -38,10 +38,9 @@ namespace JucemgScrapping
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
                 await page.EvaluateFunctionAsync<dynamic>("(value)=> document.querySelector('input[type=date]').value = value", date);
 
-                var companies = new List<string>();
-                companies.Add("a");
+                var companies = new List<string>();                
 
-                //await ReplaceText(page, "#tp_processo_id", "EXTINÇÃO");
+                
                 await page.TypeAsync("#tp_processo_id", "EXTINÇÃO");
 
                 await page.WaitForSelectorAsync("#pesquisa_ato");
@@ -177,12 +176,6 @@ namespace JucemgScrapping
 
             var i = 0;
             return someObject.Value();
-        }
-
-        private async Task ReplaceText(Page page, string selector, string replacementValue)
-        {
-            await page.WaitForSelectorAsync(selector).ConfigureAwait(false);
-            await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").value = \"{replacementValue}\"").ConfigureAwait(false);
         }
 
         private async Task ClickAsync(Page page, string selector)
