@@ -19,23 +19,18 @@ namespace JucemgScrapping
         }
 
         [Obsolete]
-        private async void Button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             new Thread(delegate ()
             {
                 DisableButton();
-                FetchData();
+                _ = FetchData();
             }).Start();
         }
 
         private async Task FetchData()
         {
-            _ = await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-            var browser = await Puppeteer.LaunchAsync(new LaunchOptions
-            {
-                Headless = true,
-                DefaultViewport = null
-            });
+            Browser browser = await LaunchBrowserAsync();
             try
             {
                 string date = currentDate.Value.AddDays(-1).ToString("yyyy-MM-dd");
@@ -79,7 +74,22 @@ namespace JucemgScrapping
             }
         }
 
+        private static async Task<Browser> LaunchBrowserAsync(
+            bool headless = true, ViewPortOptions viewPortOptions = null
+            )
+        {
+            var downloadPath = @"C:\\PuppteerBrowser";
+            var browserFetcherOptions = new BrowserFetcherOptions { Path = downloadPath };
+            var browserFetcher = new BrowserFetcher(browserFetcherOptions);
+            _ = await browserFetcher.DownloadAsync(BrowserFetcher.DefaultRevision);
 
+            var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            {
+                Headless = headless,
+                DefaultViewport = viewPortOptions
+            });
+            return browser;
+        }
 
         private void UpdateProggressLabel(List<string> companies, short quantity)
         {
@@ -179,6 +189,20 @@ namespace JucemgScrapping
         {
             await page.WaitForSelectorAsync(selector).ConfigureAwait(false);
             await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").click()").ConfigureAwait(false);
+        }
+
+        private async Task ClickElementWithXPathAndWaitForXPath(
+            Page page,
+            string clickOnXpathExpression,
+            string waitForXpathExpression)
+        {
+            var aElementsWithRestful = await page.XPathAsync(clickOnXpathExpression);
+            if (aElementsWithRestful.Length < 1)
+                throw new Exception($"A hyperlink with expression: {clickOnXpathExpression} was not found");
+
+            var navigationTask = page.WaitForXPathAsync(waitForXpathExpression);
+            var clickTask = aElementsWithRestful[0].ClickAsync();
+            await Task.WhenAll(navigationTask, clickTask);
         }
     }
 }
