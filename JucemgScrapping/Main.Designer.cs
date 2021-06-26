@@ -31,7 +31,7 @@ namespace JucemgScrapping
         {
             this.currentDate = new System.Windows.Forms.DateTimePicker();
             this.button1 = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.currentCompanies = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.totalCompanies = new System.Windows.Forms.Label();
@@ -55,12 +55,12 @@ namespace JucemgScrapping
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.Button1_Click);
             // 
-            // progressBar1
+            // progressBar
             // 
-            this.progressBar1.Location = new System.Drawing.Point(107, 201);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(182, 23);
-            this.progressBar1.TabIndex = 2;
+            this.progressBar.Location = new System.Drawing.Point(107, 201);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(182, 23);
+            this.progressBar.TabIndex = 2;
             // 
             // currentCompanies
             // 
@@ -97,7 +97,7 @@ namespace JucemgScrapping
             this.Controls.Add(this.totalCompanies);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.currentCompanies);
-            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.progressBar);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.currentDate);
             this.Name = "Main";
@@ -111,7 +111,7 @@ namespace JucemgScrapping
 
         private System.Windows.Forms.DateTimePicker currentDate;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Label currentCompanies;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label totalCompanies;
