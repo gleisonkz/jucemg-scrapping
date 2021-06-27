@@ -38,31 +38,36 @@ namespace JucemgScrapping
             try
             {
                 var companies = new List<string>();
-                string date = currentDate.Value.ToString();
+                string selectedDate = currentDate.Value.ToString();
 
-                var page = await browser.NewPageAsync();
+                Page page = await browser.NewPageAsync();
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
 
-                await page.TypeAsync("input[type=date]", date);
+                await page.TypeAsync("input[type=date]", selectedDate);
                 await ReplaceText(page, "#tp_processo_id", "EXTINÇÃO");
 
                 await page.WaitForSelectorAsync("#pesquisa_ato");
                 await ClickAsync(page, "a#pesquisa_ato");
+
                 await page.WaitForSelectorAsync("#table-result-search-acts2");
+
                 short quantityToFetch = await GetCompaniesQuantity(page);
 
-                var hasNext = false;
+                var hasNextPage = false;
                 do
                 {
                     await GetCompaniesList(page, companies);
-                    hasNext = await HasNext(page);
-                    if (hasNext)
+                    hasNextPage = await HasNextPage(page);
+                    if (hasNextPage)
                     {
                         await ClickHyperlinkWithText(page, "próxima");
                     }
                     UpdateProggressLabel(companies, quantityToFetch);
 
-                } while (hasNext);
+                } while (hasNextPage);
+
+                if (quantityToFetch != companies.Count)
+                    throw new Exception("A quantidade extraída não foi compativel com a esperada");
 
                 ExportToCsv(companies);
                 MessageBox.Show($"Foram exportados {companies.Count} registros");
@@ -143,8 +148,7 @@ namespace JucemgScrapping
             button1.Enabled = true;
         }
 
-
-        private async Task<bool> HasNext(Page page)
+        private async Task<bool> HasNextPage(Page page)
         {
             var elements = await page.XPathAsync("//a[contains(text(), 'próxima')]");
             return elements.Length > 0;
@@ -191,7 +195,7 @@ namespace JucemgScrapping
         private static void ExportToCsv(List<string> rows)
         {
             var exportPath = $@"{Environment.CurrentDirectory}\\exportacao-jucemg-{DateTime.Now.ToString("dd-MM-yyyy-HH_mm_ss_")}.csv";
-            File.WriteAllLines(exportPath, rows, Encoding.UTF8);            
+            File.WriteAllLines(exportPath, rows, Encoding.UTF8);
         }
 
         private async Task ClickAsync(Page page, string selector)
@@ -207,20 +211,6 @@ namespace JucemgScrapping
                 throw new Exception($"A hyperlink with text: {hyperlinkText} was not found");
 
             var navigationTask = page.WaitForNavigationAsync(_navigationOptions);
-            var clickTask = aElementsWithRestful[0].ClickAsync();
-            await Task.WhenAll(navigationTask, clickTask);
-        }
-
-        private async Task ClickElementWithXPathAndWaitForXPath(
-            Page page,
-            string clickOnXpathExpression,
-            string waitForXpathExpression)
-        {
-            var aElementsWithRestful = await page.XPathAsync(clickOnXpathExpression);
-            if (aElementsWithRestful.Length < 1)
-                throw new Exception($"A element with expression: {clickOnXpathExpression} was not found");
-
-            var navigationTask = page.WaitForXPathAsync(waitForXpathExpression);
             var clickTask = aElementsWithRestful[0].ClickAsync();
             await Task.WhenAll(navigationTask, clickTask);
         }
