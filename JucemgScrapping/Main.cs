@@ -38,47 +38,30 @@ namespace JucemgScrapping
             Browser browser = await LaunchBrowserAsync(false);
             try
             {
+                var companies = new List<string>();
                 string date = currentDate.Value.AddDays(-1).ToString();
 
                 var page = await browser.NewPageAsync();
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
 
-                // await page.EvaluateFunctionAsync<dynamic>("(value)=> document.querySelector('input[type=date]').value = value", date);
                 await page.TypeAsync("input[type=date]", date);
-
-                var companies = new List<string>();
-
-
-                await page.TypeAsync("#tp_processo_id", "EXTINÇÃO");
+                await ReplaceText(page, "#tp_processo_id", "EXTINÇÃO");
 
                 await page.WaitForSelectorAsync("#pesquisa_ato");
                 await ClickAsync(page, "a#pesquisa_ato");
                 await page.WaitForSelectorAsync("#table-result-search-acts2");
-
                 short quantity = await GetCompaniesQuantity(page);
-
-                //var elements = await page.XPathAsync("//a[contains(text(), 'próxima')]");
 
                 do
                 {
                     UpdateProggressLabel(companies, quantity);
                     await GetCompaniesList(page, companies);
-                    ClickHyperlinkWithText(page, "próxima");
+                    await ClickHyperlinkWithText(page, "próxima");
 
                 } while (await HasNext(page));
 
-                if (await HasNext(page))
-                {
-
-
-
-                    //var nextButton = elements[0];
-                    //await nextButton.ClickAsync();
-                    //var jsHandle = await element.GetPropertyAsync("value");
-                    //var text = await jsHandle.JsonValueAsync<string>();
-                };
-
-                MessageBox.Show($"{quantity}");
+                ExportToCsv(companies);
+                MessageBox.Show($"Foram exportados {quantity} registros");
                 await browser.CloseAsync();
             }
             catch (Exception ex)
@@ -104,6 +87,12 @@ namespace JucemgScrapping
                 DefaultViewport = viewPortOptions
             });
             return browser;
+        }
+
+        private async Task ReplaceText(Page page, string selector, string replacementValue)
+        {
+            await page.WaitForSelectorAsync(selector).ConfigureAwait(false);
+            await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").value = \"{replacementValue}\"").ConfigureAwait(false);
         }
 
         private void UpdateProggressLabel(List<string> companies, short quantity)
@@ -137,14 +126,14 @@ namespace JucemgScrapping
 
         private void Reset()
         {
-            var ResetAction  = new Action(() => Reset());
+            var ResetAction = new Action(() => Reset());
 
             if (progressBar.InvokeRequired)
             {
                 progressBar.Invoke(ResetAction);
                 return;
             }
-            
+
             progressBar.Maximum = 0;
             progressBar.Value = 0;
             button1.Enabled = true;
@@ -199,10 +188,12 @@ namespace JucemgScrapping
         {
             var exportFilePath = Path.Combine(
                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                       DateTime.Now.Date.ToString("yyyy_MM_dd"),
-                       ".csv");
+                       $"exportacao-jucemg-{DateTime.Now.Date.ToString("dd-MM-yyyy-hh:mm:ss")}.csv");
 
-            File.WriteAllLines(exportFilePath, rows, Encoding.UTF8);
+            var currentDirectory = $@"{Environment.CurrentDirectory}\\";
+            var path = currentDirectory + $"exportacao-jucemg-{DateTime.Now.Date.ToString("dd-MM-yyyy-hh-mm-ss")}.csv";
+
+            File.WriteAllLines(path, rows, Encoding.UTF8);
             MessageBox.Show($"Arquivo exportado");
         }
 
