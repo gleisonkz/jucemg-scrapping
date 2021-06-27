@@ -62,7 +62,9 @@
 
 <div align="center">
 
-Desktop Windows forms application built to automate search and collect public data of a given date from JUCEMG, and exporting to csv.
+Desktop Windows forms application built to automate search and collect public data of a given date from JUCEMG, and exporting to CSV.
+
+With this project it was possible to automate a task that was done manually, saving about 20 to 30 minutes per day.
 
 ---
 

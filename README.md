@@ -62,7 +62,9 @@
 
 <div align="center">
 
-Aplicação Desktop criada para realizar a automatização da busca e extração de dados públicos (Atos Aprovados) de uma data especifica da página da JUCEMG exportando para um arquivo csv
+Aplicação Desktop criada para realizar a automatização da busca e extração de dados públicos (Atos Aprovados) de uma data especifica da página da JUCEMG exportando para um arquivo CSV.
+
+Com este projeto foi possível automatizar uma tarefa que era feita de forma manual, economizando cerca de 20 a 30m diários.
 
 ---
 
