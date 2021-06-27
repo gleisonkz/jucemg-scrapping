@@ -34,12 +34,28 @@
 
 <div align="center">
 
-|                            :computer:                             |
-| :---------------------------------------------------------------: |
-| <kbd><img src=".github/previews/preview.png" alt="Tablet"/></kbd> |
+|                              Visual da aplicação                               |
+| :----------------------------------------------------------------------------: |
+| <kbd><img src=".github/previews/preview.png" alt="Imagem da Aplicação"/></kbd> |
 
 </div>
-  
+
+<div align="center">
+
+|                             Dados a serem extraídos                              |
+| :------------------------------------------------------------------------------: |
+| <kbd><img src=".github/previews/sample-data.png" alt="Dados da Extração"/></kbd> |
+
+</div>
+
+<div align="center">
+
+|                            Preview da extração                             |
+| :------------------------------------------------------------------------: |
+| <kbd><img src=".github/previews/sample.gif" alt="Exemplo Extração"/></kbd> |
+
+</div>
+
 ---
 
 ## :information_source: Sobre
