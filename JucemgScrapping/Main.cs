@@ -30,6 +30,7 @@ namespace JucemgScrapping
             });
 
             threadFetch.Start();
+            MessageBox.Show("Processo Iniciado...");
         }
 
         private async Task FetchData()
