@@ -46,7 +46,7 @@
 
 <div align="center">
 
-Aplicação criada para realizar a automatização da extração de dados públicos da página da JUCEMG MG
+Aplicação Desktop criada para realizar a automatização da busca e extração de dados públicos (Atos Aprovados) da página da JUCEMG exportando para um arquivo csv
 
 ---
 

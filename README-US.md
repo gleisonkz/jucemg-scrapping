@@ -46,7 +46,7 @@
 
 <div align="center">
 
-Windows forms application built to automate search and collect public data from JUCEMG MG.
+Desktop Windows forms application built to automate search and collect public data from JUCEMG, and exporting to csv.
 
 ---
 
