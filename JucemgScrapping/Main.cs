@@ -67,7 +67,7 @@ namespace JucemgScrapping
                 } while (hasNextPage);
 
                 if (quantityToFetch != companies.Count)
-                    throw new Exception("A quantidade extraída não foi compativel com a esperada");
+                    throw new Exception("A quantidade extraída não foi compatível com a esperada");
 
                 ExportToCsv(companies);
                 MessageBox.Show($"Foram exportados {companies.Count} registros");
