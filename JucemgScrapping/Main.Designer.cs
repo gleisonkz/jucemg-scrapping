@@ -100,6 +100,7 @@ namespace JucemgScrapping
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.currentDate);
+            this.MaximizeBox = false;
             this.Name = "Main";
             this.Text = "Extração Dados JUCEMG";
             this.ResumeLayout(false);
