@@ -62,7 +62,7 @@
 
 <div align="center">
 
-Desktop Windows forms application built to automate search and collect public data from JUCEMG, and exporting to csv.
+Desktop Windows forms application built to automate search and collect public data of a given date from JUCEMG, and exporting to csv.
 
 ---
 
