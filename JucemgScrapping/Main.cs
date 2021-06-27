@@ -1,8 +1,6 @@
-﻿using CsvHelper;
-using PuppeteerSharp;
+﻿using PuppeteerSharp;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -16,6 +14,7 @@ namespace JucemgScrapping
         public Main()
         {
             InitializeComponent();
+            currentDate.Value = DateTime.Today.AddDays(-1);
         }
 
         private static NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
@@ -35,11 +34,11 @@ namespace JucemgScrapping
 
         private async Task FetchData()
         {
-            Browser browser = await LaunchBrowserAsync(false);
+            Browser browser = await LaunchBrowserAsync();
             try
             {
                 var companies = new List<string>();
-                string date = currentDate.Value.AddDays(-1).ToString();
+                string date = currentDate.Value.ToString();
 
                 var page = await browser.NewPageAsync();
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
@@ -50,18 +49,23 @@ namespace JucemgScrapping
                 await page.WaitForSelectorAsync("#pesquisa_ato");
                 await ClickAsync(page, "a#pesquisa_ato");
                 await page.WaitForSelectorAsync("#table-result-search-acts2");
-                short quantity = await GetCompaniesQuantity(page);
+                short quantityToFetch = await GetCompaniesQuantity(page);
 
+                var hasNext = false;
                 do
                 {
-                    UpdateProggressLabel(companies, quantity);
                     await GetCompaniesList(page, companies);
-                    await ClickHyperlinkWithText(page, "próxima");
+                    hasNext = await HasNext(page);
+                    if (hasNext)
+                    {
+                        await ClickHyperlinkWithText(page, "próxima");
+                    }
+                    UpdateProggressLabel(companies, quantityToFetch);
 
-                } while (await HasNext(page));
+                } while (hasNext);
 
                 ExportToCsv(companies);
-                MessageBox.Show($"Foram exportados {quantity} registros");
+                MessageBox.Show($"Foram exportados {companies.Count} registros");
                 await browser.CloseAsync();
             }
             catch (Exception ex)
@@ -106,8 +110,8 @@ namespace JucemgScrapping
             }
 
             currentCompanies.Text = companies.Count.ToString();
-            progressBar.Value = companies.Count;
             totalCompanies.Text = quantity.ToString();
+            progressBar.Value = companies.Count;
             progressBar.Maximum = quantity;
         }
 
@@ -186,15 +190,8 @@ namespace JucemgScrapping
 
         private static void ExportToCsv(List<string> rows)
         {
-            var exportFilePath = Path.Combine(
-                       Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                       $"exportacao-jucemg-{DateTime.Now.Date.ToString("dd-MM-yyyy-hh:mm:ss")}.csv");
-
-            var currentDirectory = $@"{Environment.CurrentDirectory}\\";
-            var path = currentDirectory + $"exportacao-jucemg-{DateTime.Now.Date.ToString("dd-MM-yyyy-hh-mm-ss")}.csv";
-
-            File.WriteAllLines(path, rows, Encoding.UTF8);
-            MessageBox.Show($"Arquivo exportado");
+            var exportPath = $@"{Environment.CurrentDirectory}\\exportacao-jucemg-{DateTime.Now.ToString("dd-MM-yyyy-HH_mm_ss_")}.csv";
+            File.WriteAllLines(exportPath, rows, Encoding.UTF8);            
         }
 
         private async Task ClickAsync(Page page, string selector)

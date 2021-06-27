@@ -65,7 +65,7 @@ namespace JucemgScrapping
             // currentCompanies
             // 
             this.currentCompanies.AutoSize = true;
-            this.currentCompanies.Location = new System.Drawing.Point(296, 211);
+            this.currentCompanies.Location = new System.Drawing.Point(298, 211);
             this.currentCompanies.Name = "currentCompanies";
             this.currentCompanies.Size = new System.Drawing.Size(13, 13);
             this.currentCompanies.TabIndex = 3;
@@ -74,7 +74,7 @@ namespace JucemgScrapping
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(305, 211);
+            this.label1.Location = new System.Drawing.Point(327, 211);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(12, 13);
             this.label1.TabIndex = 4;
@@ -83,7 +83,7 @@ namespace JucemgScrapping
             // totalCompanies
             // 
             this.totalCompanies.AutoSize = true;
-            this.totalCompanies.Location = new System.Drawing.Point(317, 211);
+            this.totalCompanies.Location = new System.Drawing.Point(339, 211);
             this.totalCompanies.Name = "totalCompanies";
             this.totalCompanies.Size = new System.Drawing.Size(13, 13);
             this.totalCompanies.TabIndex = 5;
