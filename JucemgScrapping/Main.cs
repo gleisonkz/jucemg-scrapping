@@ -194,7 +194,7 @@ namespace JucemgScrapping
 
         private static void ExportToCsv(List<string> rows)
         {
-            var exportPath = $@"{Environment.CurrentDirectory}\\exportacao-jucemg-{DateTime.Now.ToString("dd-MM-yyyy-HH_mm_ss_")}.csv";
+            var exportPath = $@"{Environment.CurrentDirectory}\\exportacao-jucemg-{DateTime.Now:dd-MM-yyyy-HH_mm_ss_}.csv";
             File.WriteAllLines(exportPath, rows, Encoding.UTF8);
         }
 
