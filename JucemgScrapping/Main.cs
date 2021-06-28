@@ -15,6 +15,7 @@ namespace JucemgScrapping
         {
             InitializeComponent();
             currentDate.Value = DateTime.Today.AddDays(-1);
+            exportPath.Text = Environment.CurrentDirectory;
         }
 
         private NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
@@ -72,7 +73,7 @@ namespace JucemgScrapping
                     throw new Exception("A quantidade extraída não foi compatível com a esperada");
 
                 ExportToCsv(companies);
-                MessageBox.Show($"Foram exportados {companies.Count} registros");                
+                MessageBox.Show($"Foram exportados {companies.Count} registros");
                 Reset();
                 await browser.CloseAsync();
             }
@@ -225,8 +226,8 @@ namespace JucemgScrapping
 
         private void ExportToCsv(List<string> rows)
         {
-            var exportPath = $@"{Environment.CurrentDirectory}\\exportacao-jucemg-{DateTime.Now:dd-MM-yyyy-HH_mm_ss_}.csv";
-            File.WriteAllLines(exportPath, rows, Encoding.UTF8);
+            var path = $@"{exportPath.Text}\\exportacao-jucemg-{DateTime.Now:dd-MM-yyyy-HH_mm_ss_}.csv";
+            File.WriteAllLines(path, rows, Encoding.UTF8);
         }
 
         private async Task ClickAsync(Page page, string selector)
@@ -244,6 +245,15 @@ namespace JucemgScrapping
             var navigationTask = page.WaitForNavigationAsync(_navigationOptions);
             var clickTask = aElementsWithRestful[0].ClickAsync();
             await Task.WhenAll(navigationTask, clickTask);
+        }
+
+        private void ExportBtn_Click(object sender, EventArgs e)
+        {
+            var folderBrowserDialog1 = new FolderBrowserDialog();
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                exportPath.Text = folderBrowserDialog1.SelectedPath;
+            }
         }
     }
 }
