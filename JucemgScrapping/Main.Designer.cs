@@ -35,6 +35,7 @@ namespace JucemgScrapping
             this.currentCompanies = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.totalCompanies = new System.Windows.Forms.Label();
+            this.currentOperation = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // currentDate
@@ -89,11 +90,20 @@ namespace JucemgScrapping
             this.totalCompanies.TabIndex = 5;
             this.totalCompanies.Text = "0";
             // 
+            // currentOperation
+            // 
+            this.currentOperation.AutoSize = true;
+            this.currentOperation.Location = new System.Drawing.Point(107, 106);
+            this.currentOperation.Name = "currentOperation";
+            this.currentOperation.Size = new System.Drawing.Size(0, 13);
+            this.currentOperation.TabIndex = 6;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(410, 250);
+            this.Controls.Add(this.currentOperation);
             this.Controls.Add(this.totalCompanies);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.currentCompanies);
@@ -116,6 +126,7 @@ namespace JucemgScrapping
         private System.Windows.Forms.Label currentCompanies;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label totalCompanies;
+        private System.Windows.Forms.Label currentOperation;
     }
 }
 

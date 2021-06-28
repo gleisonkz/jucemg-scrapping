@@ -19,18 +19,16 @@ namespace JucemgScrapping
 
         private static NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
 
-        [Obsolete]
         private void Button1_Click(object sender, EventArgs e)
         {
 
             Thread threadFetch = new Thread(() =>
             {
                 DisableButton();
-                _ = FetchData();
+                FetchData();
             });
 
             threadFetch.Start();
-            MessageBox.Show("Processo Iniciado...");
         }
 
         private async Task FetchData()
@@ -42,6 +40,7 @@ namespace JucemgScrapping
                 string selectedDate = currentDate.Value.ToString();
 
                 Page page = await browser.NewPageAsync();
+                await page.SetUserAgentAsync("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
 
                 await page.TypeAsync("input[type=date]", selectedDate);
@@ -72,6 +71,7 @@ namespace JucemgScrapping
 
                 ExportToCsv(companies);
                 MessageBox.Show($"Foram exportados {companies.Count} registros");
+                Reset();
                 await browser.CloseAsync();
             }
             catch (Exception ex)
@@ -86,15 +86,26 @@ namespace JucemgScrapping
             bool headless = true, ViewPortOptions viewPortOptions = null
             )
         {
-            var downloadPath = @"C:\\PuppteerBrowser";
+            var downloadPath = @"C:\PuppteerBrowser";
             var browserFetcherOptions = new BrowserFetcherOptions { Path = downloadPath };
             var browserFetcher = new BrowserFetcher(browserFetcherOptions);
-            _ = await browserFetcher.DownloadAsync(BrowserFetcher.DefaultRevision);
+            await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
 
             var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = headless,
-                DefaultViewport = viewPortOptions
+                DefaultViewport = viewPortOptions,
+                ExecutablePath = @"C:\PuppteerBrowser\Win64-848005\chrome-win\chrome.exe"
+            });
+            return browser;
+        }
+
+        private static async Task<Browser> LaunchUserBrowserAsync(bool headless = true, ViewPortOptions viewPortOptions = null)
+        {
+            var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            {
+                Headless = headless,
+                ExecutablePath = @"%ProgramFiles%\Google\Chrome\Application\chrome.exe"
             });
             return browser;
         }
@@ -143,9 +154,9 @@ namespace JucemgScrapping
                 progressBar.Invoke(ResetAction);
                 return;
             }
-
-            progressBar.Maximum = 0;
-            progressBar.Value = 0;
+                    
+            totalCompanies.ResetText();
+            currentCompanies.ResetText();
             button1.Enabled = true;
         }
 
