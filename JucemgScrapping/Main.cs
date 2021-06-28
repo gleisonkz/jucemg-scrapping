@@ -17,7 +17,7 @@ namespace JucemgScrapping
             currentDate.Value = DateTime.Today.AddDays(-1);
         }
 
-        private static NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
+        private NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
 
         private void Button1_Click(object sender, EventArgs e)
         {
@@ -40,7 +40,8 @@ namespace JucemgScrapping
                 string selectedDate = currentDate.Value.ToString();
 
                 Page page = await browser.NewPageAsync();
-                await page.SetUserAgentAsync("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+                // await page.SetUserAgentAsync("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
+                SetCurrentOperation("Navegando para a página...");
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
 
                 await page.TypeAsync("input[type=date]", selectedDate);
@@ -58,6 +59,7 @@ namespace JucemgScrapping
                 {
                     await GetCompaniesList(page, companies);
                     hasNextPage = await HasNextPage(page);
+                    SetCurrentOperation("Extraindo dados...");
                     if (hasNextPage)
                     {
                         await ClickHyperlinkWithText(page, "próxima");
@@ -70,7 +72,7 @@ namespace JucemgScrapping
                     throw new Exception("A quantidade extraída não foi compatível com a esperada");
 
                 ExportToCsv(companies);
-                MessageBox.Show($"Foram exportados {companies.Count} registros");
+                MessageBox.Show($"Foram exportados {companies.Count} registros");                
                 Reset();
                 await browser.CloseAsync();
             }
@@ -82,10 +84,11 @@ namespace JucemgScrapping
             }
         }
 
-        private static async Task<Browser> LaunchBrowserAsync(
+        private async Task<Browser> LaunchBrowserAsync(
             bool headless = true, ViewPortOptions viewPortOptions = null
             )
         {
+            SetCurrentOperation("Iniciando o navegador...");
             var downloadPath = @"C:\PuppteerBrowser";
             var browserFetcherOptions = new BrowserFetcherOptions { Path = downloadPath };
             var browserFetcher = new BrowserFetcher(browserFetcherOptions);
@@ -100,7 +103,7 @@ namespace JucemgScrapping
             return browser;
         }
 
-        private static async Task<Browser> LaunchUserBrowserAsync(bool headless = true, ViewPortOptions viewPortOptions = null)
+        private async Task<Browser> LaunchUserBrowserAsync(bool headless = true, ViewPortOptions viewPortOptions = null)
         {
             var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
@@ -132,6 +135,19 @@ namespace JucemgScrapping
             progressBar.Maximum = quantity;
         }
 
+        private void SetCurrentOperation(string message)
+        {
+            Action<string> Update = (msg) => SetCurrentOperation(msg);
+
+            if (currentOperation.InvokeRequired)
+            {
+                currentOperation.Invoke(Update, message);
+                return;
+            }
+
+            currentOperation.Text = message;
+        }
+
         private void DisableButton()
         {
             var Disable = new Action(() => DisableButton());
@@ -154,9 +170,12 @@ namespace JucemgScrapping
                 progressBar.Invoke(ResetAction);
                 return;
             }
-                    
+
             totalCompanies.ResetText();
+            label1.ResetText();
             currentCompanies.ResetText();
+            progressBar.Value = 0;
+            currentOperation.ResetText();
             button1.Enabled = true;
         }
 
@@ -204,7 +223,7 @@ namespace JucemgScrapping
             }
         }
 
-        private static void ExportToCsv(List<string> rows)
+        private void ExportToCsv(List<string> rows)
         {
             var exportPath = $@"{Environment.CurrentDirectory}\\exportacao-jucemg-{DateTime.Now:dd-MM-yyyy-HH_mm_ss_}.csv";
             File.WriteAllLines(exportPath, rows, Encoding.UTF8);
