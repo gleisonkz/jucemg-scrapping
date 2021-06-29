@@ -69,7 +69,7 @@ namespace JucemgScrapping
                 string selectedDate = currentDate.Value.ToString();
 
                 Page page = await browser.NewPageAsync();
-                SetCurrentOperation("Navegando para a página...");                
+                SetCurrentOperation("Navegando para a página...");
 
                 try
                 {
@@ -117,12 +117,12 @@ namespace JucemgScrapping
 
         private async Task SearchAct(string selectedDate, Page page)
         {
-            await page.GoToAsync("https://jucemg.mg.gov.br/atos");
+            _ = await page.GoToAsync("https://jucemg.mg.gov.br/atos");
             await page.TypeAsync("input[type=date]", selectedDate);
             await ReplaceText(page, "#tp_processo_id", "EXTINÇÃO");
-            await page.WaitForSelectorAsync("#pesquisa_ato");
+            _ = await page.WaitForSelectorAsync("#pesquisa_ato");
             await ClickAsync(page, "a#pesquisa_ato");
-            await page.WaitForSelectorAsync("#table-result-search-acts2");
+            _ = await page.WaitForSelectorAsync("#table-result-search-acts2");
         }
 
         private async Task<Browser> LaunchBrowserAsync(
@@ -133,7 +133,7 @@ namespace JucemgScrapping
             var downloadPath = @"C:\PuppteerBrowser";
             var browserFetcherOptions = new BrowserFetcherOptions { Path = downloadPath };
             var browserFetcher = new BrowserFetcher(browserFetcherOptions);
-            await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+            _ = await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
 
             var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
@@ -156,8 +156,8 @@ namespace JucemgScrapping
 
         private async Task ReplaceText(Page page, string selector, string replacementValue)
         {
-            await page.WaitForSelectorAsync(selector).ConfigureAwait(false);
-            await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").value = \"{replacementValue}\"").ConfigureAwait(false);
+            _ = await page.WaitForSelectorAsync(selector);
+            _ = await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").value = \"{replacementValue}\"");
         }
 
         private void UpdateProgressLabel(List<string> companies, short quantity)
@@ -275,8 +275,8 @@ namespace JucemgScrapping
 
         private async Task ClickAsync(Page page, string selector)
         {
-            await page.WaitForSelectorAsync(selector).ConfigureAwait(false);
-            await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").click()").ConfigureAwait(false);
+            _ = await page.WaitForSelectorAsync(selector);
+            _ = await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").click()");
         }
 
         private async Task ClickHyperlinkWithText(Page page, string hyperlinkText)
@@ -297,7 +297,7 @@ namespace JucemgScrapping
             {
                 await ClickNextButton();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await page.ReloadAsync();
                 await ClickNextButton();
