@@ -1,6 +1,7 @@
 ﻿using PuppeteerSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -34,7 +35,7 @@ namespace JucemgScrapping
 
         private async Task FetchData()
         {
-            Browser browser = await LaunchBrowserAsync(false);
+            Browser browser = await LaunchBrowserAsync();
             try
             {
                 var companies = new List<string>();
@@ -72,8 +73,7 @@ namespace JucemgScrapping
                 if (quantityToFetch != companies.Count)
                     throw new Exception("A quantidade extraída não foi compatível com a esperada");
 
-                ExportToCsv(companies);
-                MessageBox.Show($"Foram exportados {companies.Count} registros");
+                ExportToCsv(companies);                
                 Reset();
                 await browser.CloseAsync();
             }
@@ -226,8 +226,11 @@ namespace JucemgScrapping
 
         private void ExportToCsv(List<string> rows)
         {
-            var path = $@"{exportPath.Text}\\exportacao-jucemg-{DateTime.Now:dd-MM-yyyy-HH_mm_ss_}.csv";
+            var path = $@"{exportPath.Text}\exportacao-jucemg-{DateTime.Now:dd-MM-yyyy-HH_mm_ss_}.csv";
             File.WriteAllLines(path, rows, Encoding.UTF8);
+            MessageBox.Show($"Foram exportados {rows.Count} registros");
+            Process.Start("Explorer.exe", "/select," + path);
+
         }
 
         private async Task ClickAsync(Page page, string selector)
