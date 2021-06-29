@@ -133,8 +133,10 @@ namespace JucemgScrapping
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.currentDate);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.MaximizeBox = false;
             this.Name = "Main";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Extração Dados JUCEMG";
             this.ResumeLayout(false);
             this.PerformLayout();

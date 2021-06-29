@@ -34,7 +34,7 @@ namespace JucemgScrapping
 
         private async Task FetchData()
         {
-            Browser browser = await LaunchBrowserAsync();
+            Browser browser = await LaunchBrowserAsync(false);
             try
             {
                 var companies = new List<string>();
