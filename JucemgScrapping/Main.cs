@@ -17,6 +17,33 @@ namespace JucemgScrapping
             InitializeComponent();
             currentDate.Value = DateTime.Today.AddDays(-1);
             exportPath.Text = Environment.CurrentDirectory;
+            SetProgressBarVisibleState(false);
+        }
+
+        private void SetProgressBarVisibleState(bool state)
+        {
+            Action<bool> Update = (progressBarState) => SetProgressBarVisibleState(progressBarState);
+
+            if (progressBar.InvokeRequired)
+            {
+                progressBar.Invoke(Update, state);
+                return;
+            }
+
+
+            if (state == false)
+            {
+                progressBar.Hide();
+                currentCompanies.Hide();
+                totalCompanies.Hide();
+                label1.Hide();
+                return;
+            }
+
+            progressBar.Show();
+            currentCompanies.Show();
+            totalCompanies.Show();
+            label1.Show();
         }
 
         private NavigationOptions _navigationOptions = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle0 } };
@@ -42,7 +69,6 @@ namespace JucemgScrapping
                 string selectedDate = currentDate.Value.ToString();
 
                 Page page = await browser.NewPageAsync();
-                // await page.SetUserAgentAsync("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                 SetCurrentOperation("Navegando para a página...");
                 await page.GoToAsync("https://jucemg.mg.gov.br/atos");
 
@@ -55,6 +81,7 @@ namespace JucemgScrapping
                 await page.WaitForSelectorAsync("#table-result-search-acts2");
 
                 short quantityToFetch = await GetCompaniesQuantity(page);
+                progressBar.Maximum = quantityToFetch;
 
                 var hasNextPage = false;
                 do
@@ -62,18 +89,19 @@ namespace JucemgScrapping
                     await GetCompaniesList(page, companies);
                     hasNextPage = await HasNextPage(page);
                     SetCurrentOperation("Extraindo dados...");
+                    SetProgressBarVisibleState(true);
                     if (hasNextPage)
                     {
                         await ClickHyperlinkWithText(page, "próxima");
                     }
-                    UpdateProggressLabel(companies, quantityToFetch);
+                    UpdateProgressLabel(companies, quantityToFetch);
 
                 } while (hasNextPage);
 
                 if (quantityToFetch != companies.Count)
                     throw new Exception("A quantidade extraída não foi compatível com a esperada");
 
-                ExportToCsv(companies);                
+                ExportToCsv(companies);
                 Reset();
                 await browser.CloseAsync();
             }
@@ -120,9 +148,9 @@ namespace JucemgScrapping
             await page.EvaluateExpressionAsync($"document.querySelector(\"{selector}\").value = \"{replacementValue}\"").ConfigureAwait(false);
         }
 
-        private void UpdateProggressLabel(List<string> companies, short quantity)
+        private void UpdateProgressLabel(List<string> companies, short quantity)
         {
-            Action<List<string>, short> Update = (c, q) => UpdateProggressLabel(c, q);
+            Action<List<string>, short> Update = (c, q) => UpdateProgressLabel(c, q);
 
             if (currentCompanies.InvokeRequired)
             {
@@ -133,7 +161,6 @@ namespace JucemgScrapping
             currentCompanies.Text = companies.Count.ToString();
             totalCompanies.Text = quantity.ToString();
             progressBar.Value = companies.Count;
-            progressBar.Maximum = quantity;
         }
 
         private void SetCurrentOperation(string message)
@@ -178,6 +205,7 @@ namespace JucemgScrapping
             progressBar.Value = 0;
             currentOperation.ResetText();
             button1.Enabled = true;
+            SetProgressBarVisibleState(false);
         }
 
         private async Task<bool> HasNextPage(Page page)
