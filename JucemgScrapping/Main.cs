@@ -62,34 +62,36 @@ namespace JucemgScrapping
 
         private async Task FetchData()
         {
-            Browser browser = await LaunchBrowserAsync();
+            Browser browser = await LaunchBrowserAsync(false);
             try
             {
                 var companies = new List<string>();
                 string selectedDate = currentDate.Value.ToString();
 
                 Page page = await browser.NewPageAsync();
-                SetCurrentOperation("Navegando para a página...");
-                await page.GoToAsync("https://jucemg.mg.gov.br/atos");
+                SetCurrentOperation("Navegando para a página...");                
 
-                await page.TypeAsync("input[type=date]", selectedDate);
-                await ReplaceText(page, "#tp_processo_id", "EXTINÇÃO");
-
-                await page.WaitForSelectorAsync("#pesquisa_ato");
-                await ClickAsync(page, "a#pesquisa_ato");
-
-                await page.WaitForSelectorAsync("#table-result-search-acts2");
+                try
+                {
+                    await SearchAct(selectedDate, page);
+                }
+                catch (Exception)
+                {
+                    await SearchAct(selectedDate, page);
+                }
 
                 short quantityToFetch = await GetCompaniesQuantity(page);
                 progressBar.Maximum = quantityToFetch;
 
                 var hasNextPage = false;
+                SetCurrentOperation("Extraindo dados...");
+                SetProgressBarVisibleState(true);
+
                 do
                 {
                     await GetCompaniesList(page, companies);
                     hasNextPage = await HasNextPage(page);
-                    SetCurrentOperation("Extraindo dados...");
-                    SetProgressBarVisibleState(true);
+
                     if (hasNextPage)
                     {
                         await ClickHyperlinkWithText(page, "próxima");
@@ -111,6 +113,16 @@ namespace JucemgScrapping
                 MessageBox.Show($"Algo deu errado! {ex.Message}");
                 Reset();
             }
+        }
+
+        private async Task SearchAct(string selectedDate, Page page)
+        {
+            await page.GoToAsync("https://jucemg.mg.gov.br/atos");
+            await page.TypeAsync("input[type=date]", selectedDate);
+            await ReplaceText(page, "#tp_processo_id", "EXTINÇÃO");
+            await page.WaitForSelectorAsync("#pesquisa_ato");
+            await ClickAsync(page, "a#pesquisa_ato");
+            await page.WaitForSelectorAsync("#table-result-search-acts2");
         }
 
         private async Task<Browser> LaunchBrowserAsync(
@@ -269,13 +281,27 @@ namespace JucemgScrapping
 
         private async Task ClickHyperlinkWithText(Page page, string hyperlinkText)
         {
-            var aElementsWithRestful = await page.XPathAsync($"//a[contains(text(), '{hyperlinkText}')]");
-            if (aElementsWithRestful.Length < 1)
-                throw new Exception($"A hyperlink with text: {hyperlinkText} was not found");
+            async Task ClickNextButton()
+            {
+                var aElementsWithRestful = await page.XPathAsync($"//a[contains(text(), '{hyperlinkText}')]");
+                if (aElementsWithRestful.Length < 1)
+                    throw new Exception($"A hyperlink with text: {hyperlinkText} was not found");
 
-            var navigationTask = page.WaitForNavigationAsync(_navigationOptions);
-            var clickTask = aElementsWithRestful[0].ClickAsync();
-            await Task.WhenAll(navigationTask, clickTask);
+                var navigationTask = page.WaitForNavigationAsync(_navigationOptions);
+                var clickTask = aElementsWithRestful[0].ClickAsync();
+                await Task.WhenAll(navigationTask, clickTask);
+            }
+
+
+            try
+            {
+                await ClickNextButton();
+            }
+            catch (Exception ex)
+            {
+                await page.ReloadAsync();
+                await ClickNextButton();
+            }
         }
 
         private void ExportBtn_Click(object sender, EventArgs e)
